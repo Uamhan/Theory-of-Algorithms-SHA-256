@@ -21,7 +21,16 @@ int main(int argc, char *argv[]){
     while(!feof(f)){
 
         nobytes = fread(M.e,1,64,f);
-        printf("%llu\n", nobytes);
+        if(nobytes < 56){
+            printf("block with less than 55 bytes\n");
+            M.e[nobytes]=0x80;
+            while(nobytes <56){
+                nobytes = nobytes + 1;
+                M.e[nobytes] = 0x00;
+            }
+        }
+
+        
     }
     fclose(f);
     
