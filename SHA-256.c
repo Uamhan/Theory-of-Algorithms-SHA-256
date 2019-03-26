@@ -42,5 +42,21 @@ void sha256(){
         0x5be0cd19
     };
 
+    //current message block
+    uint32_t M[16];
+    
+    //forloop interator
+    int t;
+
+    // from page 22 of standard, W[t] = M[t] for 0 <= t <= 15.
+    for (t = 0; i < 16; i++)
+        W[i] = M[i];
+    
+    // from page 22, W[t] = ...
+    for (t=16; t<64; t++)
+        sig_1(W[t-2]) + W[t-7] + sig_0(W[t-15]) + W[t-16];
+        
+
+
 
 }
