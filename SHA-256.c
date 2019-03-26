@@ -125,15 +125,15 @@ uint32_t sig1(uint32_t x){
 }
 
 unint32_t SIG0(uint32_t x){
-
+    return (rotr(2,x) ^ rotr(13,x) ^ rotr(22,x));
 }
 unint32_t SIG1(uint32_t x){
-
+    return (rotr(6,x) ^ rotr(11,x) ^ rotr(25,x));
 }
 
 uint32_t Ch(unint32_t x,unint32_t y,unint32_t z){
-    return (x & y) ^ ((!x) & z);
+    return ((x & y) ^ ((!x) & z));
 }
 uint32_t Maj(unint32_t x,unint32_t y,unint32_t z){
-    return (x & y) ^ (x & z) ^ (y & z);
+    return ((x & y) ^ (x & z) ^ (y & z));
 }
