@@ -16,14 +16,14 @@ void sha256();
 uint32_t sig0(uint32_t x);
 uint32_t sig1(uint32_t x);
 
-unint32_t SIG0(uint32_t x);
-unint32_t SIG1(uint32_t x);
+uint32_t SIG0(uint32_t x);
+uint32_t SIG1(uint32_t x);
 
-uint32_t Ch(unint32_t x,unint32_t y,unint32_t z);
-uint32_t Maj(unint32_t x,unint32_t y,unint32_t z);
+uint32_t Ch(uint32_t x,uint32_t y,uint32_t z);
+uint32_t Maj(uint32_t x,uint32_t y,uint32_t z);
 
 //see Section 3.2 for definitions
-unint32_t rotr(uint32_t n, uint32_t X);
+uint32_t rotr(uint32_t n, uint32_t X);
 uint32_t shr(uint32_t n, uint32_t X);
 
 int main(int argc, char *argv[]){
@@ -46,11 +46,11 @@ void sha256(){
         0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
         0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
         0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
-    }
+    };
 
 
     //Message schedule (section 6.2)
-    uint32_t w[64];
+    uint32_t W[64];
     //Working Variable (section 6.2)
     uint32_t a,b,c,d,e,f,g,h;
     //Two temporary variables (section 6.2)s
@@ -75,7 +75,7 @@ void sha256(){
     //forloop interator
     int i,t;
 
-    for(i=0 i < 1 i++){
+    for(i=0; i < 1; i++){
         // from page 22 of standard, W[t] = M[t] for 0 <= t <= 15.
         for (t = 0; i < 16; i++)
             W[i] = M[i];
@@ -96,7 +96,7 @@ void sha256(){
 
         //step 3 creating new temp values for working varibales defined above.
         for (t = 0; t<64; t++){
-            T1 = h + SIG1(e) + CH(e,f,g) + K[t] + W[t];
+            T1 = h + SIG1(e) + Ch(e,f,g) + K[t] + W[t];
             T2 = SIG0(a) + Maj(a,b,c);
             h=g;
             g=f;
@@ -118,10 +118,10 @@ void sha256(){
         H[6] = g + H[6];
         H[7] = h + H[7];
     }
-    printf("%x %x %x %x %x %x %x %x \n", H[0], H[1], H[2], H[3], H[4], H[5], H[6], H[7], )
+    printf("%x %x %x %x %x %x %x %x \n", H[0], H[1], H[2], H[3], H[4], H[5], H[6], H[7] );
 }
 //see section 3.2 for definitions
-unint32_t rotr(uint32_t n, uint32_t X){
+uint32_t rotr(uint32_t n, uint32_t X){
     return (X >> n) | (X << (32-n));
 }
 //see section 3.2 for definitions
@@ -138,16 +138,16 @@ uint32_t sig1(uint32_t x){
     return(rotr(17,x) ^ rotr(19,x) ^ shr(10,x));
 }
 
-unint32_t SIG0(uint32_t x){
+uint32_t SIG0(uint32_t x){
     return (rotr(2,x) ^ rotr(13,x) ^ rotr(22,x));
 }
-unint32_t SIG1(uint32_t x){
+uint32_t SIG1(uint32_t x){
     return (rotr(6,x) ^ rotr(11,x) ^ rotr(25,x));
 }
 
-uint32_t Ch(unint32_t x,unint32_t y,unint32_t z){
+uint32_t Ch(uint32_t x,uint32_t y,uint32_t z){
     return ((x & y) ^ ((!x) & z));
 }
-uint32_t Maj(unint32_t x,unint32_t y,unint32_t z){
+uint32_t Maj(uint32_t x,uint32_t y,uint32_t z){
     return ((x & y) ^ (x & z) ^ (y & z));
 }
