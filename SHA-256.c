@@ -16,6 +16,12 @@ void sha256();
 uint32_t sig0(uint32_t x);
 uint32_t sig1(uint32_t x);
 
+unint32_t SIG0(uint32_t x);
+unint32_t SIG1(uint32_t x);
+
+uint32_t Ch(unint32_t x,unint32_t y,unint32_t z);
+uint32_t Maj(unint32_t x,unint32_t y,unint32_t z);
+
 //see Section 3.2 for definitions
 unint32_t rotr(uint32_t n, uint32_t X);
 uint32_t shr(uint32_t n, uint32_t X);
@@ -116,4 +122,18 @@ uint32_t sig0(uint32_t x){
 uint32_t sig1(uint32_t x){
     // see section 3.2 & 4.1.2 for definitions
     return(rotr(17,x) ^ rotr(19,x) ^ shr(10,x));
+}
+
+unint32_t SIG0(uint32_t x){
+
+}
+unint32_t SIG1(uint32_t x){
+
+}
+
+uint32_t Ch(unint32_t x,unint32_t y,unint32_t z){
+
+}
+uint32_t Maj(unint32_t x,unint32_t y,unint32_t z){
+    
 }
