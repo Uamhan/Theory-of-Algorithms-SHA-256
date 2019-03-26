@@ -132,8 +132,8 @@ unint32_t SIG1(uint32_t x){
 }
 
 uint32_t Ch(unint32_t x,unint32_t y,unint32_t z){
-
+    return (x & y) ^ ((!x) & z);
 }
 uint32_t Maj(unint32_t x,unint32_t y,unint32_t z){
-    
+
 }
