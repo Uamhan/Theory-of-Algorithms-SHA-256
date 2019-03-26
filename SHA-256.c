@@ -135,5 +135,5 @@ uint32_t Ch(unint32_t x,unint32_t y,unint32_t z){
     return (x & y) ^ ((!x) & z);
 }
 uint32_t Maj(unint32_t x,unint32_t y,unint32_t z){
-
+    return (x & y) ^ (x & z) ^ (y & z);
 }
