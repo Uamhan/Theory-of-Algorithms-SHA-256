@@ -70,54 +70,55 @@ void sha256(){
     };
 
     //current message block
-    uint32_t M[16];
+    uint32_t M[16] = {0, 0, 0, 0, 0, 0, 0, 0};
     
     //forloop interator
-    int t;
+    int i,t;
 
-    // from page 22 of standard, W[t] = M[t] for 0 <= t <= 15.
-    for (t = 0; i < 16; i++)
-        W[i] = M[i];
+    for(i=0 i < 1 i++){
+        // from page 22 of standard, W[t] = M[t] for 0 <= t <= 15.
+        for (t = 0; i < 16; i++)
+            W[i] = M[i];
     
-    // from page 22, W[t] = ...
-    for (t=16; t<64; t++)
-      W[t] = sig1(W[t-2]) + W[t-7] + sig0(W[t-15]) + W[t-16];
+        // from page 22, W[t] = ...
+        for (t=16; t<64; t++)
+        W[t] = sig1(W[t-2]) + W[t-7] + sig0(W[t-15]) + W[t-16];
         
-    // Initialise a,b,c,d,e,f,g and h as per step 2 page 19
-    a = H[0];
-    b = H[1];
-    c = H[2];
-    d = H[3];
-    e = H[4];
-    f = H[5];
-    g = H[6];
-    h = H[7];
+        // Initialise a,b,c,d,e,f,g and h as per step 2 page 19
+        a = H[0];
+        b = H[1];
+        c = H[2];
+        d = H[3];
+        e = H[4];
+        f = H[5];
+        g = H[6];
+        h = H[7];
 
-    //step 3 creating new temp values for working varibales defined above.
-    for (t = 0; t<64; t++){
-        T1 = h + SIG1(e) + CH(e,f,g) + K[t] + W[t];
-        T2 = SIG0(a) + Maj(a,b,c);
-        h=g;
-        g=f;
-        f=e;
-        e=d+T1;
-        d=c;
-        c=b;
-        b=a;
-        a=T1+T2;
+        //step 3 creating new temp values for working varibales defined above.
+        for (t = 0; t<64; t++){
+            T1 = h + SIG1(e) + CH(e,f,g) + K[t] + W[t];
+            T2 = SIG0(a) + Maj(a,b,c);
+            h=g;
+            g=f;
+            f=e;
+            e=d+T1;
+            d=c;
+            c=b;
+            b=a;
+            a=T1+T2;
+        }
+
+        //step 4
+        H[0] = a + H[0];
+        H[1] = b + H[1];
+        H[2] = c + H[2];
+        H[3] = d + H[3];
+        H[4] = e + H[4];
+        H[5] = f + H[5];
+        H[6] = g + H[6];
+        H[7] = h + H[7];
     }
-
-    //step 4
-    H[0] = a + H[0];
-    H[1] = b + H[1];
-    H[2] = c + H[2];
-    H[3] = d + H[3];
-    H[4] = e + H[4];
-    H[5] = f + H[5];
-    H[6] = g + H[6];
-    H[7] = h + H[7];
-
-
+    printf("%x %x %x %x %x %x %x %x \n", H[0], H[1], H[2], H[3], H[4], H[5], H[6], H[7], )
 }
 //see section 3.2 for definitions
 unint32_t rotr(uint32_t n, uint32_t X){
