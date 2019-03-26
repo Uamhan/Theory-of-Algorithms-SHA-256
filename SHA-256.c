@@ -9,9 +9,17 @@
 //fixed bit integer header file
 #include <stdint.h>
 
+//sha256 method definition.
+void sha256();
 
 int main(int argc, char *argv[]){
 
+    sha256();
 
     return 0;
+}
+
+//sha256 method implementation
+void sha256(){
+
 }
