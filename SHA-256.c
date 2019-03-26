@@ -12,6 +12,14 @@
 //sha256 method definition.
 void sha256();
 
+//see section 4.1.2  for definitions
+uint32_t sig0(uint32_t x);
+uint32_t sig1(uint32_t x);
+
+//see Section 3.2 for definitions
+unint32_t rotr(uint32_t n, uint32_t X);
+uint32_t shr(uint32_t n, uint32_t X);
+
 int main(int argc, char *argv[]){
 
     sha256();
@@ -58,5 +66,20 @@ void sha256(){
         
 
 
+
+}
+
+unint32_t rotr(uint32_t n, uint32_t X){
+
+}
+
+uint32_t shr(uint32_t n, uint32_t X){
+
+}
+
+uint32_t sig0(uint32_t x){
+    
+}
+uint32_t sig1(uint32_t x){
 
 }
