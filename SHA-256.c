@@ -10,11 +10,10 @@
 #include <stdint.h>
 
 //sha256 method definition.
-void sha256
 
-void sha256hash();
+void sha256(uint32_t M, uint32_t output[]);
 
-void pad();
+void pad(FILE* f,uint32_t P[]);
 
 union msgblock {
     uint8_t e[64];
@@ -40,18 +39,20 @@ uint32_t shr(uint32_t n, uint32_t X);
 
 int main(int argc, char *argv[]){
 
-    FILE* f;
+    FILE* file;
     //TODO implement error checking
-    f = fopen(argv[1],"r");
-
-    sha256();
-
+    file = fopen(argv[1],"r");
+    uint32_t PaddedMessage[];
+    pad(file,PaddedMessage);
+    uint32_t HashedMessage[];
+    sha256(PaddedMessage,HashedMessage);
+    //output
     fclose(f);
     return 0;
 }
 
 //sha256 method implementation
-void sha256hash(){
+void sha256(uint32_t M , uint32_t output[]){
 
     // K Constants. defined section 4.2.2.
     uint32_t K[] = {
@@ -87,7 +88,7 @@ void sha256hash(){
     };
 
     //current message block
-    uint32_t M[16] = {0, 0, 0, 0, 0, 0, 0, 0};
+    //uint32_t M[16] = {0, 0, 0, 0, 0, 0, 0, 0};
     
     //forloop interator
     int i,t;
@@ -135,41 +136,11 @@ void sha256hash(){
         H[6] = g + H[6];
         H[7] = h + H[7];
     }
-    printf("%x %x %x %x %x %x %x %x \n", H[0], H[1], H[2], H[3], H[4], H[5], H[6], H[7] );
-}
-//see section 3.2 for definitions
-uint32_t rotr(uint32_t n, uint32_t X){
-    return (X >> n) | (X << (32-n));
-}
-//see section 3.2 for definitions
-uint32_t shr(uint32_t n, uint32_t X){
-    return (X >> n);
+
+    output = H;
 }
 
-uint32_t sig0(uint32_t x){
-    // see section 3.2 & 4.1.2 for definitions
-    return(rotr(7,x) ^ rotr(18,x) ^ shr(3,x));
-}
-uint32_t sig1(uint32_t x){
-    // see section 3.2 & 4.1.2 for definitions
-    return(rotr(17,x) ^ rotr(19,x) ^ shr(10,x));
-}
-
-uint32_t SIG0(uint32_t x){
-    return (rotr(2,x) ^ rotr(13,x) ^ rotr(22,x));
-}
-uint32_t SIG1(uint32_t x){
-    return (rotr(6,x) ^ rotr(11,x) ^ rotr(25,x));
-}
-
-uint32_t Ch(uint32_t x,uint32_t y,uint32_t z){
-    return ((x & y) ^ ((!x) & z));
-}
-uint32_t Maj(uint32_t x,uint32_t y,uint32_t z){
-    return ((x & y) ^ (x & z) ^ (y & z));
-}
-
-union msgblock pad(FILE* f){
+void pad(FILE* f,uint32_t P[]){
     
     uint64_t nobytes;
     uint64_t nobits = 0;
@@ -179,9 +150,6 @@ union msgblock pad(FILE* f){
     union msgblock M;
     
     int i;
-
-    //TODO implement error checking
-    f = fopen(argv[1],"r");
     
     while(S == READ){
         nobytes = fread(M.e,1,64,f);
@@ -215,6 +183,36 @@ union msgblock pad(FILE* f){
     if(S==PAD1)
         M.e[0] = 0x80;
     
-    return M;
+    P = M;
 }
+//see section 3.2 for definitions
+uint32_t rotr(uint32_t n, uint32_t X){
+    return (X >> n) | (X << (32-n));
+}
+//see section 3.2 for definitions
+uint32_t shr(uint32_t n, uint32_t X){
+    return (X >> n);
+}
+
+uint32_t sig0(uint32_t x){
+    // see section 3.2 & 4.1.2 for definitions
+    return(rotr(7,x) ^ rotr(18,x) ^ shr(3,x));
+}
+uint32_t sig1(uint32_t x){
+    // see section 3.2 & 4.1.2 for definitions
+    return(rotr(17,x) ^ rotr(19,x) ^ shr(10,x));
+}
+
+uint32_t SIG0(uint32_t x){
+    return (rotr(2,x) ^ rotr(13,x) ^ rotr(22,x));
+}
+uint32_t SIG1(uint32_t x){
+    return (rotr(6,x) ^ rotr(11,x) ^ rotr(25,x));
+}
+
+uint32_t Ch(uint32_t x,uint32_t y,uint32_t z){
+    return ((x & y) ^ ((!x) & z));
+}
+uint32_t Maj(uint32_t x,uint32_t y,uint32_t z){
+    return ((x & y) ^ (x & z) ^ (y & z));
 }
