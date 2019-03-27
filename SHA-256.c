@@ -11,7 +11,7 @@
 
 //sha256 method definition.
 
-void sha256(uint32_t M, uint32_t output[]);
+void sha256(uint32_t M[], uint32_t output[]);
 
 void pad(FILE* f,uint32_t P[]);
 
@@ -42,17 +42,18 @@ int main(int argc, char *argv[]){
     FILE* file;
     //TODO implement error checking
     file = fopen(argv[1],"r");
-    uint32_t PaddedMessage[];
+    uint32_t PaddedMessage[16];
     pad(file,PaddedMessage);
-    uint32_t HashedMessage[];
+    uint32_t HashedMessage[8];
     sha256(PaddedMessage,HashedMessage);
-    //output
-    fclose(f);
+    for(int i=0;i<8;i++)
+        printf("%x\n",HashedMessage[i]);
+    fclose(file);
     return 0;
 }
 
 //sha256 method implementation
-void sha256(uint32_t M , uint32_t output[]){
+void sha256(uint32_t M[] , uint32_t output[]){
 
     // K Constants. defined section 4.2.2.
     uint32_t K[] = {
@@ -155,7 +156,6 @@ void pad(FILE* f,uint32_t P[]){
         nobytes = fread(M.e,1,64,f);
         nobits = nobits + (nobytes * 8);
         if(nobytes < 56){
-            printf("block with less than 55 bytes\n");
             M.e[nobytes]=0x80;
             while(nobytes <56){
                 nobytes = nobytes + 1;
@@ -183,7 +183,7 @@ void pad(FILE* f,uint32_t P[]){
     if(S==PAD1)
         M.e[0] = 0x80;
     
-    P = M;
+    P = M.t;
 }
 //see section 3.2 for definitions
 uint32_t rotr(uint32_t n, uint32_t X){
