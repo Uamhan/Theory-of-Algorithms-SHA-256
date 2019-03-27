@@ -19,7 +19,7 @@ int main(int argc, char *argv[]){
     enum status S = READ;
 
     union msgblock M;
-    //iterator for forloop
+    
     int i;
 
     //TODO implement error checking

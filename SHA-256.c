@@ -10,7 +10,19 @@
 #include <stdint.h>
 
 //sha256 method definition.
-void sha256();
+void sha256
+
+void sha256hash();
+
+void pad();
+
+union msgblock {
+    uint8_t e[64];
+    uint32_t t[16];
+    uint64_t s[8];
+};
+
+enum status {READ,PAD0,PAD1,FINISH};
 
 //see section 4.1.2  for definitions
 uint32_t sig0(uint32_t x);
@@ -28,13 +40,18 @@ uint32_t shr(uint32_t n, uint32_t X);
 
 int main(int argc, char *argv[]){
 
+    FILE* f;
+    //TODO implement error checking
+    f = fopen(argv[1],"r");
+
     sha256();
 
+    fclose(f);
     return 0;
 }
 
 //sha256 method implementation
-void sha256(){
+void sha256hash(){
 
     // K Constants. defined section 4.2.2.
     uint32_t K[] = {
@@ -150,4 +167,54 @@ uint32_t Ch(uint32_t x,uint32_t y,uint32_t z){
 }
 uint32_t Maj(uint32_t x,uint32_t y,uint32_t z){
     return ((x & y) ^ (x & z) ^ (y & z));
+}
+
+union msgblock pad(FILE* f){
+    
+    uint64_t nobytes;
+    uint64_t nobits = 0;
+
+    enum status S = READ;
+
+    union msgblock M;
+    
+    int i;
+
+    //TODO implement error checking
+    f = fopen(argv[1],"r");
+    
+    while(S == READ){
+        nobytes = fread(M.e,1,64,f);
+        nobits = nobits + (nobytes * 8);
+        if(nobytes < 56){
+            printf("block with less than 55 bytes\n");
+            M.e[nobytes]=0x80;
+            while(nobytes <56){
+                nobytes = nobytes + 1;
+                M.e[nobytes] = 0x00;
+            }
+            M.s[7] = nobits;
+            S=FINISH;
+        }else if(nobytes < 64){
+            S = PAD0;
+            M.e[nobytes]=0x80;
+            while(nobytes <64){
+                nobytes = nobytes + 1;
+                M.e[nobytes] = 0x00;
+            }
+        }else if(feof(f)){
+            S=PAD1;
+        }
+    }
+
+    if(S==PAD0 || S==PAD1){
+        for(i = 0; i < 56; i++)
+            M.e[i] = 0x00;
+        M.s[7] = nobits;
+    }
+    if(S==PAD1)
+        M.e[0] = 0x80;
+    
+    return M;
+}
 }
