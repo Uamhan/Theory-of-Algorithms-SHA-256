@@ -27,6 +27,7 @@ unsigned int LToBEndian(uint32_t x);
 //next message block method defination handles the padding of each message block.
 int nextmsgblock(FILE *msgf, union msgblock *M, enum status *S, uint64_t *nobits);
 
+//functions used in hashing section
 //see section 4.1.2  for definitions
 uint32_t sig0(uint32_t x);
 uint32_t sig1(uint32_t x);
@@ -42,11 +43,13 @@ uint32_t rotr(uint32_t n, uint32_t X);
 uint32_t shr(uint32_t n, uint32_t X);
 
 int main(int argc, char *argv[]){
-
+    //user input file
     FILE* msgf;
+
     //TODO implement error checking
     //openfile given as first commandline argument
     msgf = fopen(argv[1],"r");
+    //executes the sha256 algorithm on the file
     sha256(msgf);
     //close file
     fclose(msgf);
@@ -122,8 +125,9 @@ void sha256(FILE *msgf){
 
     uint64_t nobits = 0;
 
+    //current status of the file
     enum status S = READ;
-
+    //the message block
     union msgblock M;
 
     // K Constants. defined section 4.2.2.
@@ -215,12 +219,13 @@ void sha256(FILE *msgf){
     H[5]=LToBEndian(H[5]);
     H[6]=LToBEndian(H[6]);
     H[7]=LToBEndian(H[7]);
-
+    //prints results to console
     printf("%08x %08x %08x %08x %08x %08x %08x %08x \n",H[0], H[1], H[2], H[3], H[4], H[5], H[6], H[7]);
 }
-
+//method converts from little endian to big endian 
 uint32_t LToBEndian(uint32_t x)
 {
+    //swaps the order of the bytes
 	return (((x>>24) & 0x000000ff) | ((x>>8) & 0x0000ff00) | ((x<<8) & 0x00ff0000) | ((x<<24) & 0xff000000));
 }
 
