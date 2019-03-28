@@ -13,7 +13,7 @@
 
 void sha256(FILE *msgf);
 
-
+unsigned int LToBEndian(uint32_t x);
 
 union msgblock {
     uint8_t e[64];
@@ -202,10 +202,25 @@ void sha256(FILE *msgf){
         H[5] = f + H[5];
         H[6] = g + H[6];
         H[7] = h + H[7];
+        
     }
+    //coverts from little to big endian
+    H[0]=LToBEndian(H[0]);
+    H[1]=LToBEndian(H[1]);
+    H[2]=LToBEndian(H[2]);
+    H[3]=LToBEndian(H[3]);
+    H[4]=LToBEndian(H[4]);
+    H[5]=LToBEndian(H[5]);
+    H[6]=LToBEndian(H[6]);
+    H[7]=LToBEndian(H[7]);
 
+    //LitToBigEndian(H[0]), LitToBigEndian(H[1]), LitToBigEndian(H[2]), LitToBigEndian(H[3]), LitToBigEndian(H[4]), LitToBigEndian(H[5]), LitToBigEndian(H[6]), LitToBigEndian(H[7])
+    printf("%08x %08x %08x %08x %08x %08x %08x %08x \n",H[0], H[1], H[2], H[3], H[4], H[5], H[6], H[7]);
+}
 
-    printf("%08x %08x %08x %08x %08x %08x %08x %08x \n",H[0], H[1], H[2], H[3], H[4], H[5], H[6], H[7] );
+uint32_t LToBEndian(uint32_t x)
+{
+	return (((x>>24) & 0x000000ff) | ((x>>8) & 0x0000ff00) | ((x<<8) & 0x00ff0000) | ((x<<24) & 0xff000000));
 }
 
 //see section 3.2 for definitions
