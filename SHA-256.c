@@ -9,19 +9,23 @@
 //fixed bit integer header file
 #include <stdint.h>
 
-//sha256 method definition.
-
-void sha256(FILE *msgf);
-
-unsigned int LToBEndian(uint32_t x);
-
+//union structure message block
 union msgblock {
     uint8_t e[64];
     uint32_t t[16];
     uint64_t s[8];
 };
-
+//enum controling state of file during padding
 enum status {READ,PAD0,PAD1,FINISH};
+
+//sha256 method definition.
+void sha256(FILE *msgf);
+
+//little to big endianan method definition
+unsigned int LToBEndian(uint32_t x);
+
+//next message block method defination handles the padding of each message block.
+int nextmsgblock(FILE *msgf, union msgblock *M, enum status *S, uint64_t *nobits);
 
 //see section 4.1.2  for definitions
 uint32_t sig0(uint32_t x);
@@ -36,8 +40,6 @@ uint32_t Maj(uint32_t x,uint32_t y,uint32_t z);
 //see Section 3.2 for definitions
 uint32_t rotr(uint32_t n, uint32_t X);
 uint32_t shr(uint32_t n, uint32_t X);
-
-int nextmsgblock(FILE *msgf, union msgblock *M, enum status *S, uint64_t *nobits);
 
 int main(int argc, char *argv[]){
 
@@ -214,7 +216,6 @@ void sha256(FILE *msgf){
     H[6]=LToBEndian(H[6]);
     H[7]=LToBEndian(H[7]);
 
-    //LitToBigEndian(H[0]), LitToBigEndian(H[1]), LitToBigEndian(H[2]), LitToBigEndian(H[3]), LitToBigEndian(H[4]), LitToBigEndian(H[5]), LitToBigEndian(H[6]), LitToBigEndian(H[7])
     printf("%08x %08x %08x %08x %08x %08x %08x %08x \n",H[0], H[1], H[2], H[3], H[4], H[5], H[6], H[7]);
 }
 
