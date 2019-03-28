@@ -11,9 +11,9 @@
 
 //sha256 method definition.
 
-void sha256(uint32_t M[], uint32_t output[]);
+void sha256(FILE *f);
 
-void pad(FILE* f,uint32_t P[]);
+void pad(FILE* f,uint32_t PaddedMessage[]);
 
 union msgblock {
     uint8_t e[64];
@@ -37,23 +37,99 @@ uint32_t Maj(uint32_t x,uint32_t y,uint32_t z);
 uint32_t rotr(uint32_t n, uint32_t X);
 uint32_t shr(uint32_t n, uint32_t X);
 
+int nextmsgblock(FILE *f, union msgblock *M, enum status *S, uint64_t *nobits);
+
 int main(int argc, char *argv[]){
 
-    FILE* file;
+    FILE* msgf;
     //TODO implement error checking
+    //openfile given as first commandline argument
     file = fopen(argv[1],"r");
-    uint32_t PaddedMessage[16];
-    pad(file,PaddedMessage);
-    uint32_t HashedMessage[8];
-    sha256(PaddedMessage,HashedMessage);
-    for(int i=0;i<8;i++)
-        printf("%x\n",HashedMessage[i]);
-    fclose(file);
+    //uint32_t PaddedMessage[16];
+    //pad(file,PaddedMessage);
+    //uint32_t HashedMessage[8];
+    //sha256(PaddedMessage,HashedMessage);
+    //for(int i=0;i<8;i++)
+        //printf("%x\n",HashedMessage[i]);
+    //run sha256 on the file
+    sha256(msgf);
+    //close file
+    fclose(msgf);
     return 0;
 }
 
+int nextmsgblock(FILE *f, union msgblock *M, enum status *S, uint64_t *nobits){
+
+    uint64_t nobytes;
+    
+    int i;
+
+    //if we have finished all message blocks s should be finish
+    if (*S == FINISH)
+        return 0;
+    //check if we need another block of padding
+    if(S==PAD0 || S==PAD1){
+        //set first 56 bytes to all zeros
+        for(i = 0; i < 56; i++)
+            M->e[i] = 0x00;
+        //set last 64 bits to the number of bits in the file (should be big endian)
+        M->s[7] = nobits;
+        //set s to finish
+        *S = FINISH;
+        //if s was pad1 set the first bit of m to one.
+        if(*S==PAD1)
+            M->e[0] = 0x80;
+        // keep the loop in sha256 going for one more iteration
+        return 1;
+    }
+    
+        //continue reading file (S == Read)
+        nobytes = fread(M->e,1,64,f);
+        //keep track on the number of bytes we've read
+        *nobits = *nobits + (nobytes * 8);
+        // if read less than 56 bytes, we can put all padding in this block
+        if(nobytes < 56){
+            //add the one bit as per the standard.
+            M->e[nobytes]=0x80;
+            // add zero bits until the last 64 bits.
+            while(nobytes <56){
+                nobytes = nobytes + 1;
+                M->e[nobytes] = 0x00;
+            }
+            //apend the file size in bits a unsigned 64 bit int.
+            M.s[7] = *nobits;
+            //set s to finish
+            *S=FINISH;
+        //check if we can put some padding into this block.
+        }else if(nobytes < 64){
+            //set s to pad0 (needs another message block with padding but no one bit)
+            *S = PAD0;
+            //add one bit to current block
+            M->e[nobytes]=0x80;
+            //pad the rest of the bloci with zeros
+            while(nobytes <64){
+                nobytes = nobytes + 1;
+                M->e[nobytes] = 0x00;
+            }
+        //check if we're at the end of the file
+        }else if(feof(f)){
+            // set s to pad1(need another message block with all the padding)
+            *S = PAD1;
+        }
+    }
+
+    //return 1 to continue the loop in sha256 method
+    return 1;
+}
+
 //sha256 method implementation
-void sha256(uint32_t M[] , uint32_t output[]){
+void sha256(File *msgf){
+
+    uint64_t nobits = 0;
+
+    enum status S = READ;
+
+    union msgblock M;
 
     // K Constants. defined section 4.2.2.
     uint32_t K[] = {
@@ -87,17 +163,14 @@ void sha256(uint32_t M[] , uint32_t output[]){
         0x1f83d9ab,
         0x5be0cd19
     };
-
-    //current message block
-    //uint32_t M[16] = {0, 0, 0, 0, 0, 0, 0, 0};
     
     //forloop interator
     int i,t;
 
-    for(i=0; i < 1; i++){
+    while(nextmsgblock(msgf,&M,&S,&nobits)){
         // from page 22 of standard, W[t] = M[t] for 0 <= t <= 15.
         for (t = 0; i < 16; i++)
-            W[i] = M[i];
+            W[t] = M.t[t];
     
         // from page 22, W[t] = ...
         for (t=16; t<64; t++)
@@ -117,14 +190,14 @@ void sha256(uint32_t M[] , uint32_t output[]){
         for (t = 0; t<64; t++){
             T1 = h + SIG1(e) + Ch(e,f,g) + K[t] + W[t];
             T2 = SIG0(a) + Maj(a,b,c);
-            h=g;
-            g=f;
-            f=e;
-            e=d+T1;
-            d=c;
-            c=b;
-            b=a;
-            a=T1+T2;
+            h = g;
+            g = f;
+            f = e;
+            e = d+T1;
+            d = c;
+            c = b;
+            b = a;
+            a = T1+T2;
         }
 
         //step 4
@@ -138,10 +211,10 @@ void sha256(uint32_t M[] , uint32_t output[]){
         H[7] = h + H[7];
     }
 
-    output = H;
+    printf("%08x %08x %08x %08x %08x %08x %08x %08x \n",H[0], H[1], H[2], H[3], H[4], H[5], H[6], H[7] );
 }
 
-void pad(FILE* f,uint32_t P[]){
+void pad(FILE* f,uint32_t PaddedMessage[]){
     
     uint64_t nobytes;
     uint64_t nobits = 0;
@@ -155,21 +228,27 @@ void pad(FILE* f,uint32_t P[]){
     while(S == READ){
         nobytes = fread(M.e,1,64,f);
         nobits = nobits + (nobytes * 8);
+
         if(nobytes < 56){
             M.e[nobytes]=0x80;
+
             while(nobytes <56){
                 nobytes = nobytes + 1;
                 M.e[nobytes] = 0x00;
             }
+
             M.s[7] = nobits;
             S=FINISH;
+
         }else if(nobytes < 64){
             S = PAD0;
             M.e[nobytes]=0x80;
+
             while(nobytes <64){
                 nobytes = nobytes + 1;
                 M.e[nobytes] = 0x00;
             }
+
         }else if(feof(f)){
             S=PAD1;
         }
