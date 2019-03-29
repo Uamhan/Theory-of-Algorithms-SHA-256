@@ -38,4 +38,17 @@ with the following command.
 ./SHA-256.exe test.txt
 ```
 
+### Execution
+
+Once Compiled the cloned directory will contain a file named SHA-256.exe. The directory contains a txt file named test.txt
+By default it contains the string "abc". to execute the program on this file you can use the following comand 
+
+
+```bash
+
+./SHA-256.exe test.txt
+
+```
+
+if you wish to test a difrent input you can change the contents of test.txt or replace test.txt in the comand above with the location of the fill you wish to execute the program on.
 
