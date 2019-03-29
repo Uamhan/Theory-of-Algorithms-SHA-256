@@ -10,16 +10,20 @@
 #include <stdint.h>
 
 #include <string.h>
-#define CHUNK_SIZE 64
+#define BLOCK_SIZE 64
 #define TOTAL_LEN_LEN 8
 
 // buffer state struct that holds information regarding the message to be hashed during
 struct buffer_state {
+    //pointer to the input to be hashed
 	const uint8_t * p;
-	size_t len;
+	//length of the current block
+    size_t len;
+    //total length of the input
 	size_t total_len;
-	int single_one_delivered; /* bool */
-	int total_len_delivered; /* bool */
+    //checks for padding method
+	int single_one_delivered; 
+	int total_len_delivered; 
 };
 
 //union structure message block
@@ -40,7 +44,7 @@ unsigned int LToBEndian(uint32_t x);
 static void initBufferState(struct buffer_state * state, const void * input, size_t len);
 
 //next message block method defination handles the padding of each message block.
-int nextmsgblock(uint8_t chunk[CHUNK_SIZE], struct buffer_state * states);
+int nextmsgblock(uint8_t block[BLOCK_SIZE], struct buffer_state * state);
 
 //functions used in hashing section
 //see section 4.1.2  for definitions
@@ -75,69 +79,82 @@ int main(int argc, char *argv[]){
     return 0;
 }
 
-int nextmsgblock(uint8_t chunk[CHUNK_SIZE], struct buffer_state * state){
+int nextmsgblock(uint8_t block[BLOCK_SIZE], struct buffer_state * state){
 
-    uint64_t nobytes;
-    
-    int i;
+    size_t spaceInBlock;
 
-    //if we have finished all message blocks s should be finish
-    if (*S == FINISH)
-        return 0;
-    //check if we need another block of padding
-    if(*S==PAD0 || *S==PAD1){
-        //set first 56 bytes to all zeros
-        for(i = 0; i < 56; i++)
-            M->e[i] = 0x00;
-        //set last 64 bits to the number of bits in the file (should be big endian)
-        M->s[7] = *nobits;
-        //set s to finish
-        
-        //if s was pad1 set the first bit of m to one.
-        if(*S==PAD1)
-            M->e[0] = 0x80;
-        // keep the loop in sha256 going for one more iteration
-        *S = FINISH;
-        return 1;
-    }
-    
-        //continue reading file (S == Read)
-        nobytes = fread(M->e,1,64,msgf);
-        //keep track on the number of bytes we've read
-        *nobits = *nobits + (nobytes * 8);
-        // if read less than 56 bytes, we can put all padding in this block
-        if(nobytes < 56){
-            //add the one bit as per the standard.
-            M->e[nobytes]=0x80;
-            // add zero bits until the last 64 bits.
-            while(nobytes <56){
-                nobytes = nobytes + 1;
-                M->e[nobytes] = 0x00;
-            }
-            //apend the file size in bits a unsigned 64 bit int.
-            M->s[7] = *nobits;
-            //set s to finish
-            *S=FINISH;
-        //check if we can put some padding into this block.
-        }else if(nobytes < 64){
-            //set s to pad0 (needs another message block with padding but no one bit)
-            *S = PAD0;
-            //add one bit to current block
-            M->e[nobytes]=0x80;
-            //pad the rest of the bloci with zeros
-            while(nobytes <64){
-                nobytes = nobytes + 1;
-                M->e[nobytes] = 0x00;
-            }
-        //check if we're at the end of the file
-        }else if(feof(msgf)){
-            // set s to pad1(need another message block with all the padding)
-            *S = PAD1;
-        }
-    
+    //if we have finished all message blocks we return 0 letting the sha algorithm know we have finished padding
+	if (state->total_len_delivered) {
+		return 0;
+	}
+    //if the length of the current block is greater than or equal to BLOCK_SIZE which is 64.
+	if (state->len >= BLOCK_SIZE) {
+        //copys the BLOCK_SIZE() amount of characters to for state->p to block (memcpy copys from the memory location of the inputs)
+		memcpy(block, state->p, BLOCK_SIZE);
+        //adds the BLOCK_SIZE to state->p
+		state->p += BLOCK_SIZE;
+        //takes BLOCK_SIZE away from state ->legnth
+		state->len -= BLOCK_SIZE;
+        //return one back to sha256 method letting it know to continue looping
+		return 1;
+	}
+    //copys state->len characters from state->p to to block (memcpy copys from the memory location of the inputs)
+	memcpy(block, state->p, state->len);
+    //adds state->len to block
+	block += state->len;
+    //sets the varible spaceINBlock to equal Block_SIZE - state->len
+    spaceInBlock = BLOCK_SIZE - state->len;
+    //adds state -> len to state->p
+	state->p += state->len;
+    //sets state->len to 0
+	state->len = 0;
 
-    //return 1 to continue the loop in sha256 method
-    return 1;
+	// If we reach this point, spaceInBlock is a one at minimum. 
+    //if state->single_one_delivered dose not equal one we add the one to the end of the message block as per the sha256 standard padding section
+	if (!state->single_one_delivered) {
+        //add a one to the end of the block
+		*block++ = 0x80;
+        //reduce the space in the block by 1
+	    spaceInBlock -= 1;
+        //set state-> single_one_delivered to 1
+		state->single_one_delivered = 1;
+	}
+
+	
+	//At This point their is either enough space left for the total length left to parse and we can finish
+    //or there isint enough space left and we need to padd the rest of this block with zeros
+    //in this case there will be enough space in this block to finish next time this method is run.
+    //if Space in block is greater than the the total length left in the message
+	if  spaceInBlock >= TOTAL_LEN_LEN) {
+        //take total length left away from spaceInBlock
+		const size_t left = spaceInBlock - TOTAL_LEN_LEN;
+        //len is set to the total length left in the block
+		size_t len = state->total_len;
+
+		
+        //we set the space left in the block to 0's
+		memset(block, 0x00, left);
+        //we add left to the block
+		block += left;
+
+		//we append the length of the message to the end of the block
+		block[7] = (uint8_t) (len << 3);
+        //shift the length by 5
+		len >>= 5;
+        //for loop that that makes the last digits in the block big endian
+		for (int i = 6; i >= 0; i--) {
+			block[i] = (uint8_t) len;
+			len >>= 8;
+		}
+        //sets the total length delivered varible in state to done
+		state->total_len_delivered = 1;
+	} else {
+        //otherwise fill the current block with 0's
+		memset(block, 0x00, spaceInBlock);
+	}
+
+	return 1;
+
 }
 
 //sha256 method implementation
