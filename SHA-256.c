@@ -77,13 +77,24 @@ int main(int argc, char *argv[]){
 
     //aray that will hold the hashed message
     uint8_t hash[32];
-    //input to be hashed
-    char input[] = "abc";
+    //char array that will hold the input message for the hashing algorithm
+    char input[sizeof argv[1]];
+    //user file that will message to be hashed will be read from
+    FILE* file;
+    //opens user file.
+    file = fopen(argv[1],"r");
+    //reads string from file into input and prints the input to console.
+    while (fgets(input, sizeof argv[1], file) != NULL)
+        printf("Input from file = %s \n\n", input);
+    //closes file.
+    fclose(file);    
     //hash algorithm that fills the hash array with the hashed message
     sha256(hash, input, strlen(input));
     //prints the hashed message
     for(int i = 0; i <32;i++)
         printf("%x",hash[i]);
+    
+    
 
     return 0;
 }
