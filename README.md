@@ -81,5 +81,18 @@ cf5b16a7 78af8380 036ce59e 7b049237 0b249b11 e8f07a51 afac4503 7afee9d1
 
 ```
 
+### References
+
+
+Profesor Ianmcloughlin (G.M.I.T) lecture notes, lectures/tutorials and implementation.
+
+the Secure hash algorithm standard documentation (specificly the sections on SHA256
+https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf
+
+The wiki Page on the sha-2 standard
+https://en.wikipedia.org/wiki/SHA-2
+
+
+
 
 
