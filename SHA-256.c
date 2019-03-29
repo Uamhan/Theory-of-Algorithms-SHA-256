@@ -36,7 +36,7 @@ union msgblock {
 enum status {READ,PAD0,PAD1,FINISH};
 
 //sha256 method definition.
-void sha256(FILE *msgf);
+void sha256(uint8_t hash[32], char input[], size_t len);
 
 //little to big endianan method definition
 unsigned int LToBEndian(uint32_t x);
@@ -158,7 +158,7 @@ int nextmsgblock(uint8_t block[BLOCK_SIZE], struct buffer_state * state){
 }
 
 //sha256 method implementation
-void sha256(FILE *msgf){
+void sha256(uint8_t hash[32], char input[], size_t len){
 
     uint64_t nobits = 0;
 
