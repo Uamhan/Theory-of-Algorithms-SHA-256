@@ -9,7 +9,7 @@
 //fixed bit integer header file
 #include <stdint.h>
 
-// buffer state struct that holds information regarding the message to be hashed during padding
+// buffer state struct that holds information regarding the message to be hashed during
 struct buffer_state {
 	const uint8_t * p;
 	size_t len;
@@ -32,6 +32,8 @@ void sha256(FILE *msgf);
 
 //little to big endianan method definition
 unsigned int LToBEndian(uint32_t x);
+//added method to initilse the bufferstate structure
+static void initBufferState(struct buffer_state * state, const void * input, size_t len);
 
 //next message block method defination handles the padding of each message block.
 int nextmsgblock(FILE *msgf, union msgblock *M, enum status *S, uint64_t *nobits);
@@ -235,6 +237,15 @@ void sha256(FILE *msgf){
     //    printf("%x ",hash[i]);
     //}
 }
+
+static void initBufferState(struct buffer_state * state, char input[], size_t len){
+	state->p = input;
+	state->len = len;
+	state->total_len = len;
+	state->single_one_delivered = 0;
+	state->total_len_delivered = 0;
+}
+
 //method converts from little endian to big endian 
 uint32_t LToBEndian(uint32_t x)
 {
