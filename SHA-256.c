@@ -9,6 +9,10 @@
 //fixed bit integer header file
 #include <stdint.h>
 
+#include <string.h>
+#define CHUNK_SIZE 64
+#define TOTAL_LEN_LEN 8
+
 // buffer state struct that holds information regarding the message to be hashed during
 struct buffer_state {
 	const uint8_t * p;
@@ -36,7 +40,7 @@ unsigned int LToBEndian(uint32_t x);
 static void initBufferState(struct buffer_state * state, const void * input, size_t len);
 
 //next message block method defination handles the padding of each message block.
-int nextmsgblock(FILE *msgf, union msgblock *M, enum status *S, uint64_t *nobits);
+int nextmsgblock(uint8_t chunk[CHUNK_SIZE], struct buffer_state * states);
 
 //functions used in hashing section
 //see section 4.1.2  for definitions
@@ -71,7 +75,7 @@ int main(int argc, char *argv[]){
     return 0;
 }
 
-int nextmsgblock(FILE *msgf, union msgblock *M, enum status *S, uint64_t *nobits){
+int nextmsgblock(uint8_t chunk[CHUNK_SIZE], struct buffer_state * state){
 
     uint64_t nobytes;
     
