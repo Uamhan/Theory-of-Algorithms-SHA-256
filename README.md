@@ -1,5 +1,8 @@
 # Theory of Algorithms -  SHA256 Implementation.
 
+This is an implementation of the Sha-256 hashing algorithm done for G.M.I.T's Thoery of algorithms module.
+This implementation is an educational exercise and as such should not be used for real world aplication. 
+
 ### Installation
 
 First we need to install a C compiler if you do not already have one. A C compiler known as GCC can be found at
