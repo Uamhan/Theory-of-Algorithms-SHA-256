@@ -39,28 +39,14 @@ enum status {READ,PAD0,PAD1,FINISH};
 //sha256 method definition.
 void sha256(uint8_t hash[32], char input[], size_t len);
 
-//little to big endianan method definition
-unsigned int LToBEndian(uint32_t x);
 //added method to initilse the bufferstate structure
 static void initBufferState(struct buffer_state * state, char input[], size_t len);
 
 //next message block method defination handles the padding of each message block.
 int nextmsgblock(uint8_t block[BLOCK_SIZE], struct buffer_state * state);
 
-//functions used in hashing section
-//see section 4.1.2  for definitions
-uint32_t sig0(uint32_t x);
-uint32_t sig1(uint32_t x);
-
-uint32_t SIG0(uint32_t x);
-uint32_t SIG1(uint32_t x);
-
-uint32_t Ch(uint32_t x,uint32_t y,uint32_t z);
-uint32_t Maj(uint32_t x,uint32_t y,uint32_t z);
-
 //see Section 3.2 for definitions
 static inline uint32_t rotr(uint32_t value, unsigned int count);
-uint32_t shr(uint32_t n, uint32_t X);
 
 // K Constants. defined section 4.2.2.
 static const uint32_t k[] = {
@@ -272,43 +258,10 @@ static void initBufferState(struct buffer_state * state, char input[], size_t le
 	state->total_len_delivered = 0;
 }
 
-//method converts from little endian to big endian 
-uint32_t LToBEndian(uint32_t x)
-{
-    //swaps the order of the bytes
-	return (((x>>24) & 0x000000ff) | ((x>>8) & 0x0000ff00) | ((x<<8) & 0x00ff0000) | ((x<<24) & 0xff000000));
-}
-
 //see section 3.2 for definitions
 static inline uint32_t rotr(uint32_t value, unsigned int count){
 	return value >> count | value << (32 - count);
 }
-//see section 3.2 for definitions
-uint32_t shr(uint32_t n, uint32_t X){
-    return (X >> n);
-}
 
-uint32_t sig0(uint32_t x){
-    // see section 3.2 & 4.1.2 for definitions
-    return(rotr(7,x) ^ rotr(18,x) ^ shr(3,x));
-}
-uint32_t sig1(uint32_t x){
-    // see section 3.2 & 4.1.2 for definitions
-    return(rotr(17,x) ^ rotr(19,x) ^ shr(10,x));
-}
-
-uint32_t SIG0(uint32_t x){
-    return (rotr(2,x) ^ rotr(13,x) ^ rotr(22,x));
-}
-uint32_t SIG1(uint32_t x){
-    return (rotr(6,x) ^ rotr(11,x) ^ rotr(25,x));
-}
-
-uint32_t Ch(uint32_t x,uint32_t y,uint32_t z){
-    return ((x & y) ^ ((!x) & z));
-}
-uint32_t Maj(uint32_t x,uint32_t y,uint32_t z){
-    return ((x & y) ^ (x & z) ^ (y & z));
-}
 
 
